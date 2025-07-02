@@ -2,6 +2,16 @@
 
 Custom brackets that can be used to improve wire and hose routing.
 
+## Fabrication
+
+The various online cut shops have different ordering processes so you'll need to consult their documentation. 
+
+If you're familiar with FreeCAD's Sheet Metal Workbench you can try using the "Unfold" feature to generate the flattened drawing files to send to the shop. 
+However, exporting to a STEP file seems to produce more consistent results.
+
+NOTE: As of June 2025, the unfolded files don't work well with [Send Cut Send](https://sendcutsend.com); use the STEP files instead.
+
+
 ## Wing Trailing Edge Bracket
 
 The stock kit doesn't use the space inside of the wing trailing edge skins for very much.
@@ -24,14 +34,6 @@ These parts have been used successfully with fuel hoses from [Aircraft Specialty
 - [1/4" ID Snap Bushings](https://www.amazon.com/dp/B00OP6070I) for 1/4" OD pitot and AoA hoses
 - [1/2" ID AN931 Elastic Grommet](https://www.aircraftspruce.com/catalog/appages/an931.php) for the fuel return hose
 - [1/4" ID AN931 Elastic Grommet](https://www.aircraftspruce.com/catalog/appages/an931.php) for the wingtip and landing light wires
-
-### Fabrication
-
-The various online cut shops have different ordering processes so you'll need to consult their documentation. 
-
-If you're familiar with FreeCAD's Sheet Metal Workbench you can try using the "Unfold" feature to generate the flattened drawing files to send to the shop. However, exporting to a STEP file seems to produce more consistent results.
-
-NOTE: As of June 2025, the unfolded files don't work well with [Send Cut Send](https://sendcutsend.com); use the STEP files instead.
 
 ### Installation
 
