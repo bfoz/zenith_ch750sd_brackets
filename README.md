@@ -46,6 +46,25 @@ These parts have been used successfully with fuel hoses from [Aircraft Specialty
 7. Feed the wires through the wire grommets
 8. Rivet the brackets once you're happy with everything
 
+
 ## Fuel Return Hose Bracket
+
+`FuelReturnHoseBracket.FCStd`
+
+If you're using a fuel return hose and routing it through the wing bay just outboard of the fuel tank, 
+this bracket can be used to keep the hose from bouncing around inside of the wing.
+
+The part in the file is for the left wing. Flip the bend angle to make the part for the right wing.
+
+### Bushings and Grommets
+
+- [1/2" ID AN931 Elastic Grommet](https://www.aircraftspruce.com/catalog/appages/an931.php) 
+
+### Installation
+
+- Use 2 A4 rivets to attach the bracket to the rear stiffener in the wing bay just outboard of the fuel tank. You will need to match drill holes in the stiffener.
+- Position the bracket roughly in the middle of the stiffener, or wherever seems to be right for your fuel hose.
+- The stiffening flange of the bracket should be outboard of the fuel hose to prevent the hose from rubbing on the flange. 
+
 
 ## Wingtip wires bracket
