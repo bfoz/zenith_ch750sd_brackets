@@ -67,4 +67,23 @@ The part in the file is for the left wing. Flip the bend angle to make the part 
 - The stiffening flange of the bracket should be outboard of the fuel hose to prevent the hose from rubbing on the flange. 
 
 
-## Wingtip wires bracket
+## Wingtip wire brackets
+
+`WingtipWireBracket.FCStd`
+
+If you run the wingtip wires through the outboard-most bay in the wing, this bracket will keep the wires from flopping around inside that bay.
+
+**NOTE**: This bracket is currently sized for the 3-conductor wire that comes with the kit. I haven't yet tested it with the 4-conductor wire that most builders use.
+
+### Bushings and Grommets
+
+- [1/8" ID AN931 Elastic Grommet](https://www.aircraftspruce.com/catalog/appages/an931.php) 
+
+### Installation
+
+1. Align the bracket with the stiffener in the outobard-most bay of the wing
+2. Match-drill the two rivet holes using a #30 drill bit
+3. Rivet to the stiffener with 2 A4 rivets
+4. Push the grommet into the hole
+5. Feed the wires through the grommet
+
