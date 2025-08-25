@@ -5,13 +5,16 @@ on:
     tags:
       - 'v*'
 
+env:
+  BUNDLE_FILENAME: ${{ github.event.repository.name }}.zip
+
 jobs:
   release:
     name: Release pushed tag
     runs-on: ubuntu-latest
     steps:
       - name: Create the bundle
-        run: zip ${{ github.repository#*/ }} *.FCStd
+        run: zip $BUNDLE_FILENAME *.FCStd
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -20,4 +23,5 @@ jobs:
           gh release create "$tag" \
               --repo="$GITHUB_REPOSITORY" \
               --title="Version ${tag#v}" \
-              --generate-notes
+              --generate-notes \
+              $BUNDLE_FILENAME
