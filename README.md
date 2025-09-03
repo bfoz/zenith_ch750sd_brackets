@@ -1,6 +1,6 @@
 # Zenith CH750 Super Duty Brackets
 
-Custom brackets that can be used to improve wire and hose routing.
+Custom brackets that can be used to improve wire, cable, and hose routing.
 
 ## Fabrication
 
@@ -86,4 +86,48 @@ If you run the wingtip wires through the outboard-most bay in the wing, this bra
 3. Rivet to the stiffener with 2 A4 rivets
 4. Push the grommet into the hole
 5. Feed the wires through the grommet
+
+
+## Elevator Pulley Bracket
+
+`ElevatorPulleyBracket.FCStd`
+
+The stock kit uses nylon blocks as "pulleys" for the elevator control cables. Presumably, steel cables rubbing on plastic will eventually wear out the plastic, 
+necessitating periodic replacement. If you'd like to avoid that problem, or at least delay it, you can install pulleys just forward of the jump seat rear channel 
+that will keep the control cables from rubbing on the nylon.
+
+### Fabrication
+
+The CAD file includes two parts, `Bracket` and `Base`, that need to be fabricated. The other parts are only for reference. 
+
+- Export the `Bracket` and `Base` parts as STEP files and send them to your favorite cut shop
+- Use 1mm thick (0.040") Aluminum for both parts
+- The CAD file uses the bend radius and K-factor for [Send Cut Send](https://sendcutsend.com). Adjust as needed for your shop.
+
+### Parts
+
+| Part Number | Quantity | Description |
+|-------------|----------|-------------|
+| [MC20220-1](https://www.aircraftspruce.com/catalog/pnpages/MS20220-1.php)     | 2 | 1.75" Phenolic Pulley                                 |
+| [AN5-13A](https://www.aircraftspruce.com/catalog/hapages/an5.php)             | 2 | Bolt                                                  |
+| [AN365-524A](https://www.aircraftspruce.com/pages/ha/nut_an365/an365_2.php)   | 2 | Elastic Stop Nut                                      |
+| [AN960-516](https://www.aircraftspruce.com/catalog/hapages/flatwashers.php)   | 4 | Washer                                                |
+|                                                                               |   | Tape (blue tape, electrical tape, whatever is handy)  |
+
+### Installation
+
+**NOTE**: The base plates can be installed on either the inside, or the outside, of the airplane. The cables will line up either way. The difference is purely aesthetic.
+
+1. Run the control cables through the holes in the rear jump seat channel, tie weights to the ends, and adjust to approximate the final position of the cables
+2. Set the base plate and pulley brackets on the cabin floor with the cables running through the brackets
+3. Install the pulleys in the brackets (using the bolts, nuts, and washers) with the cables under the pulleys
+4. Align the pulleys and brackets with the cables and make sure everything looks "right"
+5. With the base plates under the brackets, and all of the rivet holes aligned, tape the base plates to the cabin floor skin
+6. Remove the pulleys and brackets while leaving the base plate in place
+7. Match drill the holes in the base plates through the cabin floor skin using a #20 drill bit
+8. Debur the holes
+9. Cleco the base plates and brackets in place. **NOTE**: The base plates can be installed on the inside or the outside of the airplane. The choice is purely aesthetic.
+10. Rivet with A5 rivets **from the outisde** of the airplane
+11. Re-install the pulleys with the control cables under the pulleys
+
 
