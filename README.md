@@ -131,3 +131,28 @@ The CAD file includes two parts, `Bracket` and `Base`, that need to be fabricate
 11. Re-install the pulleys with the control cables under the pulleys
 
 
+## Matco Parking Brake Valve Bracket
+
+`MatcoParkingBrakeBracket.FCStd`
+
+The brake line kit from [Aircraft Specialty](https://www.aircraftspecialty.com/Superdutybrakes.html) doesn't come with any brackets for mounting the [Matco parking brake valve](https://matcoals.com/product/parking-brake-valve-dual/). 
+The included hoses are cut to length assuming that you have the brackets that you can see in [Mark Pensenstadler's video](https://youtu.be/gur6rt8JNb0?si=d8QNzfhoa7Ir_gkw) 
+(the kit was created to fit his airplane). Unfortunately, Mark made his brackets out of scrap aluminum and he didn't provide enough details 
+to make your own, nor did he say anything about selling the brackets himself.
+
+The brackets in this file are my attempt to replicate Mark's design. Although, I made the top piece overlap the bottom pieces because I think it looks better that way.
+It will still work if you prefer it the other way.
+
+### Parts
+
+| Part Number | Quantity | Description |
+|-------------|----------|-------------|
+| Aircraft Specialty Zenith Super Duty Brake kit | 1 | [Link](https://www.aircraftspecialty.com/Superdutybrakes.html)
+
+### Installation
+
+1. Using A4 rivets, rivet the top piece to the bottom pieces to make it look like the assembly in the CAD file
+2. Match-drill the bottom holes into your heel support channel using a #30 drill bit. If you've already installed the heel support channel in your airplane, be **very careful** to *NOT* drill through the bottom of your cabin.
+3. Bolt the valve to the top plate. Make sure to install the bolt from the bottom. When the valve is installed, you should have the nuts and rubber washers on top.
+4. Make sure the shiny end of the brake valve is pointing aft
+5. Using A4 rivets, rivet the bracket to the heel support plate
