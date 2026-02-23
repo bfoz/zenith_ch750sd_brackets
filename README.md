@@ -156,3 +156,28 @@ It will still work if you prefer it the other way.
 3. Bolt the valve to the top plate. Make sure to install the bolt from the bottom. When the valve is installed, you should have the nuts and rubber washers on top.
 4. Make sure the shiny end of the brake valve is pointing aft
 5. Using A4 rivets, rivet the bracket to the heel support plate
+
+
+## Rudder Pedal Brackets
+
+`RudderPedalBracketAssembly.FCStd`
+
+The provided brackets are also used as bearings for the rudder pedals, but it's just a bare metal-on-metal surface. 
+Because the pedals are steel, most builders either paint or powder coat them. Over time, the coating wears off and stops protecting the steel.
+These brackets replace the aluminum brackets that came in your kit, and add a Delrin bushing to act as a bearing. 
+The brackets' holes for the tubes have also been enlarged to avoid wearing on the tubes. 
+The Delrin holes should be a snug fit for a powder coated pedal tube, and might be a little loose for a painted tube. Feel free to adjust the hole size if needed.
+
+### Additional Parts
+
+| Part Number              | Quantity | Description                                                     |
+|--------------------------|----------|-----------------------------------------------------------------|
+| M5x16 Socket Head Screw  |     4    | Standard thread metric bolts. Other head shapes are acceptable. |
+| M5 Washer                |     8    | Washers for M5 bolts                                            |
+| M5 Lock Nut              |     4    | Locking nuts for M5 bolts                                       |
+
+### Installation
+
+1. Using the kit-provided hardware, bolt each bracket to the cabin floor skins in the normal fashion. *NOTE* The upper bolts interfere with installing the lower bolts.
+2. Using the metric hardware, bolt the Delrin pieces to the inboard side of each bracket. Use washers under the heads and the nuts
+3. Slide the rudder tubes into the brackets from the inboard side
