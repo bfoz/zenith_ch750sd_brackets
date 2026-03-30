@@ -143,19 +143,30 @@ to make your own, nor did he say anything about selling the brackets himself.
 The brackets in this file are my attempt to replicate Mark's design. Although, I made the top piece overlap the bottom pieces because I think it looks better that way.
 It will still work if you prefer it the other way.
 
+I also switched the bottom mounting holes from A4 rivets to M4 bolts. Drilling rivet holes in the heel support plate traps shavings in a way that's very hard to clean out. 
+It would be better to drill the holes before riveting the support plate, but that isn't always possible, or obvious ahead of time. 
+Using M4 adhesive mounting studs is a much cleaner, and more expensive, option.
+
 ### Parts
 
-| Part Number | Quantity | Description |
-|-------------|----------|-------------|
-| Aircraft Specialty Zenith Super Duty Brake kit | 1 | [Link](https://www.aircraftspecialty.com/Superdutybrakes.html)
+| Part Number                   | Quantity  | Product Page | Description |
+|-------------------------------|-----------|--------------|-------------|
+| Zenith Super Duty Brake kit   | 1         | [Link](https://www.aircraftspecialty.com/Superdutybrakes.html)                            | Aircraft Specialty Zenith Super Duty Brake kit    |
+| 97590A711                     | 4         | [McMaster-Carr](https://www.mcmaster.com/products/adhesive-mount-studs/thread-size~m4-1/) | Adhesive-Ready Studs, Zinc-Plated Steel, M4x 0.7mm Thread, 10mm Long, 23mm Diameter Base  |
+| M4 Elastic Locking Nuts       | 4         |                                                                                           |                                                   |
+| Adhesive                      |           |                                                                                           | JB Weld, Gorilla Expoxy, Scotch-Weld DP100FR, etc |
 
 ### Installation
 
 1. Using A4 rivets, rivet the top piece to the bottom pieces to make it look like the assembly in the CAD file
-2. Match-drill the bottom holes into your heel support channel using a #30 drill bit. If you've already installed the heel support channel in your airplane, be **very careful** to *NOT* drill through the bottom of your cabin.
+2. The bases of the mounting studs will overlap. You'll need to trim about 5mm off one side of each. Test fit in the brackets to ensure clearance.
+3. Clean the mounting area on the heel plate thoroughly to remove all dust, grease, oil, etc
 3. Bolt the valve to the top plate. Make sure to install the bolt from the bottom. When the valve is installed, you should have the nuts and rubber washers on top.
 4. Make sure the shiny end of the brake valve is pointing aft
-5. Using A4 rivets, rivet the bracket to the heel support plate
+5. Bolt the studs into the bottom of the bracket and tighten
+6. Apply adhesive to the mounting side of each stud
+7. **NOTE: This step is permanent!** Locate the bracket where you want it to be on the heel plate and press the studs onto the metal. **NOTE: This is permanent!**
+8. Follow the adhesive manufacturer's instructions for set time, clamping pressure, etc
 
 
 ## Rudder Pedal Brackets
