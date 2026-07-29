@@ -19,7 +19,13 @@ If your build uses that space for a fuel return hose, or for the pitot and AoA h
 
 The file `TrailingEdgeBracket.FCStd` is a FreeCAD file containing several different bracket designs meant for different configurations of wiring and hoses in the left wing. 
 
-To make the brackets for the right wing, simply flip the bend angle in FreeCAD (make sure you have the Sheet Metal Workbench installed). 
+The part named `OutboardTrailingEdgeBracket` is intended to hold the wires that go out to the wingtips and the slats (if you have those). 
+You can either use 4 of these brackets for each wing and replace the ziptie anchors that came in the kit, or you can use one for each wing just inboard of the joiner bracket in the rear spar.
+If you have a fuel return hose from your engine (ULPower etc), you'll want to use at least one of these (inboard of the joiner plate but outboard of the fuel hose) to help hold the wires off of that hose.
+
+For the right wing, which doesn't have Pitot or AoA tubes, you can use `OutboardTrailingEdgeBracket` for the inboard brackets as well. 
+
+To make the brackets for the right wing, you'll need to flip the bend angle for half of the parts. 
 Alternatively, most cut shops that do online ordering will give you the option of duplicating the part with a reversed bend angle at order time.
 You'll have two extra holes in the resulting right wing bracket because only the left wing has the pitot and AoA tubes. Feel free to use those holes for something else, or simply leave them unpopulated.
 
@@ -34,6 +40,13 @@ These parts have been used successfully with fuel hoses from [Aircraft Specialty
 - [1/4" ID Snap Bushings](https://www.amazon.com/dp/B00OP6070I) for 1/4" OD pitot and AoA hoses
 - [1/2" ID AN931 Elastic Grommet](https://www.aircraftspruce.com/catalog/appages/an931.php) for the fuel return hose
 - [1/4" ID AN931 Elastic Grommet](https://www.aircraftspruce.com/catalog/appages/an931.php) for the wingtip and landing light wires
+
+If you're planning to use `OutboardTrailingEdgeBracket` outboard of the fuel hoses you'll likely need some 1/8" ID grommets for the wires. Either of these will fit:
+
+- [1/8" ID Oil Resistant Buna-O Rubber Grommets](https://www.mcmaster.com/9307K35/)
+- [1/8" ID High Temperature Silicone Rubber](https://www.mcmaster.com/1061T11/)
+
+**NOTE:** The part named `OutboardTrailingEdgeBracketTape` is meant to be used with double sided tape. Be sure to get a strong tape that can handle extreme conditions. I used 3M VHB tape.
 
 ### Installation
 
