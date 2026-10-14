@@ -32,17 +32,29 @@ Other paths:
 - App bundle: `/Applications/FreeCAD.app` — FreeCAD 1.1.4
 - Headless CLI: `/Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd script.py` (also `.../bin/python`)
 
-### Critical: the Sheet Metal workbench add-on is NOT installed
+### The Sheet Metal workbench add-on is a hard dependency
 
-Every sheet-metal body starts from `BaseShape`, a `PartDesign::FeaturePython` supplied by the Sheet Metal Workbench add-on (`SheetMetalBaseShapeCmd`). It is a hard dependency of all six documents and is not installed here (`~/Library/Application Support/FreeCAD/Mod` does not exist).
+Every sheet-metal body starts from `BaseShape`, a `PartDesign::FeaturePython` supplied by the Sheet Metal Workbench add-on (`SheetMetalBaseShapeCmd`, class `SMBaseShape`). All six documents depend on it.
 
-Consequences:
+It is installed at `~/Library/Application Support/FreeCAD/v1-1/Mod/sheetmetal`. Note the version-specific `v1-1` path segment — FreeCAD 1.1 does **not** use `~/Library/Application Support/FreeCAD/Mod`, so don't conclude the add-on is missing from that path. Verify with `import SheetMetalBaseShapeCmd` under `freecadcmd`, or by checking that a `Proxy` element in `Document.xml` carries `module="SheetMetalBaseShapeCmd"`.
 
-- Opening a document logs `PropertyPythonObject::Restore: blocked import of module 'SheetMetalBaseShapeCmd'`, and `BaseShape.Proxy` is `None`.
-- Cached shapes still load correctly — `Shape.isValid()`, `Volume`, and `BoundBox` all work — and a plain `doc.recompute()` reports "Up-to-date" with no errors. That is the cache being reused, not a real rebuild.
-- Therefore never edit, recompute, and save a `.FCStd` headlessly and assume the sheet-metal features survived. Unfold, bend, and K-factor features cannot run.
-- Reading geometry headlessly is safe: measurements, bounding boxes, volume checks, and STEP export of already-computed shapes.
-- Real model edits happen in the FreeCAD GUI with the add-on installed via the Add-on Manager. Ask the user before assuming it's available.
+With the add-on available, `BaseShape.Proxy` restores as a live `SMBaseShape` and headless scripting works properly.
+
+### Data loss hazard: opening a doc without the add-on, then saving
+
+FreeCAD blocks restoring an add-on-backed feature whose module can't be imported. The document still opens and looks perfect, but the feature's `Proxy` becomes `null` — and **saving at that point permanently destroys the add-on feature**, writing a plain shape in its place. FreeCAD reports no error, and every later `recompute()` says "Up-to-date". The only clue is the log line `PropertyPythonObject::Restore: blocked import of module '...'`.
+
+Never save a document that logged that message. Close it without saving, install the add-on, then reopen.
+
+This has already happened once and the damage is permanent. `WingtipWireBracket.FCStd` was upgraded from the FreeCAD 1.0 document format and saved while the add-on was missing (2026-10-13). Its `BaseShape` is now a static shape with `Proxy = null` and no module reference, where the other five documents still carry `module="SheetMetalBaseShapeCmd"`. Installing the add-on afterwards does **not** repair it — re-saving leaves the proxy null, because the object in the file no longer names a module to restore.
+
+What was lost in that file, precisely:
+
+- The Base Shape feature is inert. Setting `BaseShape.length` to `40 mm` and recomputing leaves the body volume at exactly `505.729221 mm³`. The `length`/`width`/`height`/`radius`/`thickness` properties are still readable but no longer regenerate anything.
+- Sheet-metal-specific features (Unfold, bend and K-factor handling) can no longer attach to that body. This part is `shapeType="Flat"` with no bends, so its flat pattern is simply the solid itself and the fabrication drawing is unaffected.
+- What still works: the sketch-driven chain. Adding a circle to `Sketch` and recomputing changes the volume (505.73 → 477.45), so hole and cutout editing remains fully parametric. Sketch (8 geometries, 21 constraints), `Pocket` (ThroughAll), `Fillet`, and `Fillet001` are all intact, and the solid is unchanged and valid.
+
+Repair is optional and low-value: re-create the Base Shape in the GUI (30 x 20 x 1 mm plate, 1 mm radius) and re-attach the sketch. The original FreeCAD 1.0 document is unrecoverable — it was overwritten, never committed, and only one `.FCBak` is kept, which is also post-upgrade.
 
 Global sheet-metal parameters, consistent across every part:
 
