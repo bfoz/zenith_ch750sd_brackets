@@ -12,6 +12,23 @@ However, exporting to a STEP file seems to produce more consistent results.
 NOTE: As of June 2025, the unfolded files don't work well with [Send Cut Send](https://sendcutsend.com); use the STEP files instead.
 
 
+## ACK E04 ELT Bracket
+
+`ACK_E04_ELT_Bracket`
+
+If you mount your ELT in the aft section, next to the access hole, this bracket will mount the ELT "within 10 degrees of the airplane's longitudinal axis", as required by the installation instructions.
+
+### Installation
+
+The bracket can be used anywhere on the aft sloped skin that it fits. Mount it with the taller end pointing forward.
+
+The rivet hole patten on the flanges is meant to line up with the rivet holes in the Z-angle (SD75F19-1) along the port edge of the rear access hole. You'll need to match drill holes in the bottom skin for the other side of the bracket. If you've already riveted the Z-angle, then you'll need to drill out some of those rivets too.
+
+Alternatively, you can slide the bracket forward until it fits entirely on the skin, and then match drill all of the rivet holes. Note that if you move it too far forward you'll lose access to the front end of the ELT (where the wires and buttons are).
+
+**NOTE:** Fasten the ELT mounting bands to the top of the bracket before riveting the bracket to the airframe. Otherwise, you'll have difficulty tightening the nuts.
+
+
 ## Wing Trailing Edge Bracket
 
 The stock kit doesn't use the space inside of the wing trailing edge skins for very much.
