@@ -18,6 +18,14 @@ NOTE: As of June 2025, the unfolded files don't work well with [Send Cut Send](h
 
 If you mount your ELT in the aft section, next to the access hole, this bracket will mount the ELT "within 10 degrees of the airplane's longitudinal axis", as required by the installation instructions.
 
+### Fabrication
+
+The CAD file includes two parts: `ACK_E04_ELT_Bracket` and `ACK_E04_ELT`. Only fabricate the bracket. The other part is for reference.
+
+- Export the `ACK_E04_ELT_Bracket` part as a STEP file and send it to your favorite cut shop
+- Use 1mm thick (0.040") Aluminum
+- The CAD file uses the bend radius and K-factor for [Send Cut Send](https://sendcutsend.com) (0.024" and 0.45). Adjust as needed for your shop.
+
 ### Installation
 
 The bracket can be used anywhere on the aft sloped skin that it fits. Mount it with the taller end pointing forward.
