@@ -11,6 +11,22 @@ However, exporting to a STEP file seems to produce more consistent results.
 
 NOTE: As of June 2025, the unfolded files don't work well with [Send Cut Send](https://sendcutsend.com); use the STEP files instead.
 
+### Regenerating the STEP files
+
+The STEP files for every bracket are generated from the FreeCAD documents, so they always match the current models. If you change a model and want updated fabrication files, or you've cloned the repository and want to build them yourself:
+
+1. Install [FreeCAD](https://www.freecad.org) 1.1 or later
+2. Run `make` in the repository root
+
+The build reads `scripts/parts.manifest`, which lists one line per output file:
+
+    <FreeCAD document> | <body label> | <output filename>
+
+Everything is written into the `step` directory at the repository root, and every filename there is unique. `make clean` removes the directory; `make clean-steps` removes just the declared files.
+
+Only parts that are missing or older than their source document get rebuilt. `make check` re-exports everything and verifies each file, `make list` shows what would be built, and `make help` lists the rest. It's also fine to skip FreeCAD entirely and export manually in the FreeCAD GUI — just keep the filenames matching the manifest.
+
+If you'd rather not install FreeCAD at all, the GitHub Actions workflow regenerates every STEP file on each change and attaches them to the run as a downloadable artifact. Open the workflow run, then download `zenith-ch750sd-step-files-...` from the Artifacts list at the bottom of the summary page. Releases also carry the STEP files as a zip alongside the FreeCAD source files.
 
 ## ACK E04 ELT Bracket
 
@@ -22,7 +38,7 @@ If you mount your ELT in the aft section, next to the access hole, this bracket 
 
 The CAD file includes two parts: `ACK_E04_ELT_Bracket` and `ACK_E04_ELT`. Only fabricate the bracket. The other part is for reference.
 
-- Export the `ACK_E04_ELT_Bracket` part as a STEP file and send it to your favorite cut shop
+- Send `ACK_E04_ELT_Bracket-ACK_E04_ELT_Bracket.step` to your favorite cut shop (see [Regenerating the STEP files](#regenerating-the-step-files) if you changed the model)
 - Use 1mm thick (0.040") Aluminum
 - The CAD file uses the bend radius and K-factor for [Send Cut Send](https://sendcutsend.com) (0.024" and 0.45). Adjust as needed for your shop.
 
@@ -138,7 +154,7 @@ that will keep the control cables from rubbing on the nylon.
 
 The CAD file includes two parts, `Bracket` and `Base`, that need to be fabricated. The other parts are only for reference. 
 
-- Export the `Bracket` and `Base` parts as STEP files and send them to your favorite cut shop
+- Send `ElevatorPulleyBracket-Bracket.step` and `ElevatorPulleyBracket-Base.step` to your favorite cut shop (see [Regenerating the STEP files](#regenerating-the-step-files) if you changed the model)
 - Use 1mm thick (0.040") Aluminum for both parts
 - The CAD file uses the bend radius and K-factor for [Send Cut Send](https://sendcutsend.com). Adjust as needed for your shop.
 

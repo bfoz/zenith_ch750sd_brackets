@@ -1,0 +1,46 @@
+# Fabrication parts manifest.
+#
+# One line per STEP file to generate:
+#
+#   <FreeCAD document> | <body label> | <output filename>
+#
+# Blank lines and lines starting with # are ignored.
+# Output filenames are written into the step directory at the repository root, and must be unique across the whole manifest.
+# The directory is flat because that is what gets zipped into a release, so the exporter rejects duplicates and subdirectories.
+# Bodies are matched on their Label, not their internal name, so renaming a body in FreeCAD means updating it here too.
+# Filenames follow <Document>-<Body>.step, with a few legacy exceptions.
+#
+# Bodies that are deliberately NOT built:
+#   ACK_E04_ELT_Bracket / ACK_E04_ELT         reference model of the ELT itself
+#   ElevatorPulleyBracket / Pulley            machined phenolic pulley, bought not cut
+#   TrailingEdgeBracket / Grommets            variant of BushingsGrommets
+#   TrailingEdgeBracket / SnapBushings        variant of BushingsGrommets
+#   TrailingEdgeBracket / Body2Bushings3Grommets  variant of BushingsGrommets
+#
+# Not every built body is 1mm aluminum sheet metal:
+#   RudderPedalBracketAssembly / Bearing      Delrin bearing, not a bracket. Send Cut Send cuts plastic too.
+#   TrailingEdgeBracket / Body                base profile the other trailing edge brackets derive from, exported for reference.
+#
+# Documents that are not bracket models and have no parts to build:
+#   ELT_reference.FCStd, ch750sd.FCStd, sd750.FCStd
+
+ACK_E04_ELT_Bracket.FCStd | ACK_E04_ELT_Bracket | ACK_E04_ELT_Bracket-ACK_E04_ELT_Bracket.step
+
+ElevatorPulleyBracket.FCStd | Bracket | ElevatorPulleyBracket-Bracket.step
+ElevatorPulleyBracket.FCStd | Base | ElevatorPulleyBracket-Base.step
+
+FuelReturnHoseBracket.FCStd | Body | FuelReturnHoseBracket.step
+
+MatcoParkingBrakeBracket.FCStd | Bottom Bracket | MatcoParkingBrakeBracket-Bottom Bracket.step
+MatcoParkingBrakeBracket.FCStd | Top Bracket | MatcoParkingBrakeBracket-Top Bracket.step
+
+RudderPedalBracketAssembly.FCStd | LeftBracket | RudderPedalBracketAssembly-LeftBracket.step
+RudderPedalBracketAssembly.FCStd | RightBracket | RudderPedalBracketAssembly-RightBracket.step
+RudderPedalBracketAssembly.FCStd | Bearing | RudderPedalBracketAssembly-Bearing.step
+
+TrailingEdgeBracket.FCStd | Body | TrailingEdgeBracket-Body.step
+TrailingEdgeBracket.FCStd | BushingsGrommets | TrailingEdgeBracket-BushingsGrommets.step
+TrailingEdgeBracket.FCStd | OutboardTrailingEdgeBracket | TrailingEdgeBracket-OutboardTrailingEdgeBracket.step
+TrailingEdgeBracket.FCStd | OutboardTrailingEdgeBracketTape | TrailingEdgeBracket-OutboardTrailingEdgeBracketTape.step
+
+WingtipWireBracket.FCStd | Body | WingtipWireBracket.step

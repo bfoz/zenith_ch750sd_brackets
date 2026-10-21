@@ -12,20 +12,24 @@ The deliverables are the `*.FCStd` FreeCAD source documents (canonical), `README
 
 ## Repository inventory
 
-FreeCAD documents, one per bracket family:
+FreeCAD documents that define brackets (these are the ones in `scripts/parts.manifest`):
 
 - `TrailingEdgeBracket.FCStd` — the big one, 7 bodies: `Body`, `Grommets`, `SnapBushings`, `BushingsGrommets`, `Body2Bushings3Grommets`, `OutboardTrailingEdgeBracket`, `OutboardTrailingEdgeBracketTape`
 - `ElevatorPulleyBracket.FCStd` — `Bracket` + `Base` (to be fabricated), `Pulley` (reference only), plus an `Assembly` with joints
 - `MatcoParkingBrakeBracket.FCStd` — `Top Bracket` + `Bottom Bracket` (note the spaces in the body labels) + `Assembly`; references `mcmaster/97590A711_*.STEP` studs
 - `RudderPedalBracketAssembly.FCStd` — `LeftBracket`, `RightBracket`, `Bearing` (Delrin)
+- `ACK_E04_ELT_Bracket.FCStd` — `ACK_E04_ELT_Bracket` (fab) plus `ACK_E04_ELT`, a reference model of the ELT itself
 - `FuelReturnHoseBracket.FCStd` and `WingtipWireBracket.FCStd` — single body each
+
+Other `.FCStd` files are **not** bracket models and have no parts to build: `ELT_reference.FCStd`, `ch750sd.FCStd`, `sd750.FCStd` (all contain zero `PartDesign::Body` objects; `ch750sd.FCStd` is populated by the scratch script `ch750sd.py`). Don't add them to the manifest, and don't treat an empty body list in them as a bug.
 
 Other paths:
 
 - `mcmaster/` — McMaster-Carr supplier STEP models for purchased hardware
 - `RudderPedalAssembly/` — per-body STEP exports for that assembly
-- `.github/workflows/release.yaml` — release automation (see Releases)
-- `test.pdf`, `test1.pdf` — scratch junk, referenced by nothing
+- `scripts/` — `parts.manifest` and `export_step.py` (see Building STEP files)
+- `.github/workflows/release.yaml` — release automation; `step-files.yaml` — STEP generation (see Releases)
+- `test.pdf`, `test1.pdf`, `export_stl.applescript`, `stl/`, `__pycache__/`, `.env` — scratch and local tooling, referenced by nothing; leave them untracked unless asked
 
 ## FreeCAD environment
 
@@ -63,12 +67,40 @@ Global sheet-metal parameters, consistent across every part:
 - Millimetres everywhere (STEP exports carry `SI_UNIT(.MILLI.,.METRE.)`)
 - Older DXF exports came from FreeCAD v1.0 (`AC1014`); the current app is 1.1.x
 
+## Building STEP files
+
+STEP generation is automated. `scripts/parts.manifest` is the single source of truth for what gets built, one line per output:
+
+    <FreeCAD document> | <body label> | <output filename>
+
+Outputs are flat files in the `step/` directory at the repo root (gitignored, overridable with `ZENITH_STEP_DIR`), which is what CI uploads and what a release zips. The directory is flat and filenames must be unique, so the exporter rejects duplicate outputs and any path that escapes the directory.
+
+Make targets (`make help` prints them all):
+
+- `make` — export parts that are missing or older than their source document, into the `step/` directory
+- `make check` (or `make force`) — re-export everything, ignoring timestamps
+- `make <document>` — build one document, e.g. `make TrailingEdgeBracket`
+- `make list` / `make step-files` — show the manifest, or just the output paths under `step/`
+- `make clean-steps` — delete the declared STEP files, leaving the directory
+- `make clean` — delete the whole `step/` directory, including scratch files from an interrupted run
+
+`scripts/export_step.py` is the implementation. It runs under `freecadcmd`, opens each document once, exports the listed bodies, and closes **without saving**. Never add a `save()` call there, and never recompute: the script reads the shapes FreeCAD already cached in each file, which is why it works with or without the Sheet Metal add-on installed. It writes to a `.tmp.step` scratch path and validates each file by reading it back and comparing volume before renaming into place.
+
+Bodies not in the manifest are deliberately excluded: `Pulley` (bought, not cut) and the three superseded TrailingEdge variants (`Grommets`, `SnapBushings`, `Body2Bushings3Grommets`), which are alternatives to `BushingsGrommets`. Add a manifest line, don't export everything blindly.
+
+freecadcmd quirks that will bite you (all encoded in the script):
+
+- An uncaught exception exits **0**; `sys.exit(N)` works. Output is not flushed on exit, so flush before exiting or write to stderr. Catch everything and exit non-zero explicitly.
+- Arguments after the script name are treated as documents to open, and unknown `--options` are rejected before the script runs. Configuration therefore arrives in env vars: `ZENITH_STEP_MANIFEST`, `ZENITH_STEP_ONLY`, `ZENITH_STEP_FORCE`.
+- `Import.export` picks the exporter from the file extension, so a scratch path must keep `.step`.
+- FreeCAD prints harmless noise to stderr on every run (a missing 3Dconnexion driver, "Recomputation required" geo-version notes). Don't write a check that greps stderr for the word Error.
+
 ## Working rules
 
-1. **Edit in the GUI, commit the result.** Model changes are made in FreeCAD (by a human, or with the add-on installed) and then committed. Agents should restrict themselves to reading/inspecting models, writing and updating `README.md`, checking naming conventions, and reviewing diffs.
+1. **Edit models in the GUI, generate exports with make.** Model changes are made in FreeCAD (by a human, or with the add-on installed) and then committed. Regenerating STEP files is safe to automate with `make`; editing parametric geometry headlessly is not. Agents may inspect models, regenerate exports, and update `README.md`.
 2. **README and model must stay in sync.** Every bracket section follows the same shape: intro prose, optional `### Fabrication`, `### Bushings and Grommets` and/or `### Parts` (Part number / Quantity / Description table with Aircraft Spruce and McMaster links), then `### Installation` as numbered steps. A new bracket needs a matching README section in the same commit.
 3. **Fabrication files: STEP first.** Unfolded DXF output has been unreliable with Send Cut Send (see the June 2025 note in the README). Prefer STEP exports for ordering and keep DXFs only where they demonstrably still work.
-4. **Naming convention for derived files:** `<DocumentName>-<BodyLabel>.step` and `<DocumentName>-<BodyLabel>_Unfold.dxf`. Spaces in body labels become underscores in DXFs but stay spaces in STEPs, e.g. `MatcoParkingBrakeBracket-Top Bracket.step` vs `MatcoParkingBrakeBracket-Top_Bracket_Unfold.dxf`.
+4. **Naming convention for derived files:** `<DocumentName>-<BodyLabel>.step` and `<DocumentName>-<BodyLabel>_Unfold.dxf`. Spaces in body labels become underscores in DXFs but stay spaces in STEPs, e.g. `MatcoParkingBrakeBracket-Top Bracket.step` vs `MatcoParkingBrakeBracket-Top_Bracket_Unfold.dxf`. The manifest is authoritative for STEP names; this rule is what it follows, and DXFs are still hand-made.
 5. **Right-wing parts are mirrored.** Most brackets are modelled for the left wing and the README tells builders to flip the bend angle (or have the cut shop duplicate the part with a reversed bend). Don't silently add duplicate mirrored geometry — document the flip instead.
 6. **Amateur-built aircraft, safety-relevant.** These are published as a workable option, not a certified engineering drawing. Keep the README's hedging ("can be used", "feel free to adjust", "verify fit") instead of prescriptive absolutes, keep exact hardware part numbers and quantities, and flag permanent or destructive steps such as the epoxy-bonded M4 studs on the parking brake bracket. Never delete an existing caution.
 7. **Binary files can't be diffed.** `git diff` on a `.FCStd` shows only a byte-count change. Verify model edits by re-opening the file headlessly and inspecting the affected bodies, or ask the user to eyeball them in the GUI.
@@ -84,18 +116,26 @@ Global sheet-metal parameters, consistent across every part:
 
 ### Untracked files — do not auto-stage
 
-Only 9 files are tracked today. The working tree also holds a large set of untracked derived artifacts (`*.step`, `*.dxf`, `*.svg`), `RudderPedalAssembly/`, `mcmaster/97590A716_*.STEP`, and even `WingtipWireBracket.FCStd` despite it being documented in the README, plus `test.pdf`/`test1.pdf`. Whether those belong in git is the maintainer's call, not an agent's. Never run `git add -A` or `git add .` here; stage explicit paths and surface the ambiguity to the user instead of resolving it silently.
+Tracked files are the `.FCStd` documents, `README.md`, `AGENTS.md`, `Makefile`, `scripts/`, `.github/`, and one `mcmaster/` supplier model. Everything else in the working tree is untracked: all generated `*.step` files, the hand-made `*.dxf`/`*.svg` unfold drawings, `RudderPedalAssembly/`, a second `mcmaster/` model, and `test.pdf`/`test1.pdf`. Whether those belong in git is the maintainer's call, not an agent's. Never run `git add -A` or `git add .` here; stage explicit paths and surface the ambiguity to the user instead of resolving it silently.
 
-## Releases
+## Workflows
 
-`.github/workflows/release.yaml` fires on any pushed `v*` tag: it zips `*.FCStd` into `<repo-name>.zip` and runs `gh release create --generate-notes`.
+`.github/workflows/step-files.yaml` builds the STEP files. It runs on push to `main`, on pull requests, on `workflow_dispatch`, and is called by the release workflow. It installs the pinned FreeCAD AppImage, exports with `ZENITH_STEP_FORCE=1`, asserts that no tracked `.FCStd` changed, verifies every declared file was written, and uploads the `step/` directory as an artifact named `zenith-ch750sd-step-files` (`-<tag>` when triggered by a tag) retained 30 days. Nothing is committed back and no release is modified by this workflow.
 
-- **Only `.FCStd` files ship.** STEP and DXF files are absent from the bundle, so the workflow's glob needs extending if the maintainer wants fabrication files released.
-- Tag format is `v<version>` (`v0` exists) and release titles are `Version <version>`.
-- Don't create or push tags unless explicitly asked.
+- The FreeCAD version is pinned by asset name and SHA256 in the workflow `env` block. Bump it deliberately and diff the output, because a FreeCAD upgrade can change exported geometry. It runs on `ubuntu-24.04`, not `ubuntu-latest`, so a runner image bump can't strand the pinned AppImage.
+- The exporter reads cached shapes, so the workflow does **not** install the Sheet Metal workbench. Keeping the add-on out of CI proves the exporter doesn't depend on it. If a model ever needs recomputation to export correctly, fix the document in the GUI rather than adding the add-on to CI.
+- Being called is declared under `on.workflow_call`, including a workflow-level `outputs.artifact`. A reusable workflow must redeclare its outputs there; a job-level `outputs:` alone hands the caller an empty string with no error.
+
+`.github/workflows/release.yaml` fires on any pushed `v*` tag, calls `step-files.yaml` first, and attaches **two** assets to the release: `<repo-name>.zip` containing every `*.FCStd`, and `<repo-name>-<tag>-steps.zip` containing the generated STEP files flattened into a single directory.
+
+- DXF and SVG unfold drawings are still not in any bundle; they are hand-made and unreliably generated (see the June 2025 note in the README).
+- The STEP bundle is flattened with `zip -j`, so two parts sharing a basename would silently overwrite each other. The release workflow detects collisions and fails; if it fires, rename the manifest output for the new part rather than renaming a body.
+- Tag format is `v<version>` (`v0` exists) and release titles are `Version <version>`. Don't create or push tags unless explicitly asked.
 
 ## Sanity checks an agent can actually run
 
+- `make check` regenerates every STEP file and verifies each one reads back with the same volume as the model. This is the primary check.
+- `make list` and `make step-files` show what the manifest declares.
 - List bodies and parameters with a short `freecadcmd` script (`PartDesign::Body` labels, `thickness`, `BoundBox`, `Volume`).
 - Confirm a STEP export's units and body count from its `ISO-10303-21` header.
 - Inspect object names and history without FreeCAD via `unzip -p <Model>.FCStd Document.xml` — a `.FCStd` is a zip.

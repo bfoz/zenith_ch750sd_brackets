@@ -6,26 +6,72 @@ on:
       - 'v*'
 
 env:
-  BUNDLE_FILENAME: ${{ github.event.repository.name }}.zip
+  FCSTD_BUNDLE: ${{ github.event.repository.name }}.zip
+  STEP_BUNDLE: ${{ github.event.repository.name }}-${{ github.ref_name }}-steps.zip
 
 jobs:
+  step-files:
+    # Builds and verifies the fabrication STEP files, then uploads them as a workflow artifact.
+    # Reuses the workflow that already guards every push.
+    # A release can then only ship STEP files that the same pinned FreeCAD build produced and validated.
+    uses: ./.github/workflows/step-files.yaml
+
   release:
     name: Release pushed tag
+    needs: step-files
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-      - name: Create the bundle
-        run: zip $BUNDLE_FILENAME *.FCStd
+
+      - name: Create the FreeCAD bundle
+        run: zip "$FCSTD_BUNDLE" *.FCStd
+
+      # Fail fast if the reusable workflow ever stops publishing its output.
+      # Otherwise download-artifact would error on a blank name with no useful message.
+      - name: Check the STEP artifact name
+        env:
+          ARTIFACT: ${{ needs.step-files.outputs.artifact }}
+        run: |
+          set -euo pipefail
+          if [ -z "$ARTIFACT" ]; then
+            echo "::error::the step-files workflow returned no artifact name"
+            exit 1
+          fi
+          echo "Downloading artifact: $ARTIFACT"
+
+      - name: Download the generated STEP files
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.step-files.outputs.artifact }}
+          path: steps
+
+      - name: Create the STEP bundle
+        run: |
+          set -euo pipefail
+          test -n "$(find steps -type f -name '*.step' -print -quit)"
+          # Filenames are unique by construction: the exporter rejects duplicate outputs when it parses the manifest.
+          # The check is kept as a second line of defence, because a silent overwrite here would ship a release missing a bracket.
+          duplicates=$(find steps -type f -name '*.step' -exec basename {} \; | sort | uniq -d)
+          if [ -n "$duplicates" ]; then
+            echo "::error::STEP filenames collide, the flattened bundle would lose files: $duplicates"
+            exit 1
+          fi
+          # zip -j flattens whatever directory layout download-artifact produced, so builders get a flat list of parts to download individually.
+          find steps -type f -name '*.step' -print0 | xargs -0 zip -j "$STEP_BUNDLE"
+          unzip -l "$STEP_BUNDLE"
+
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}
         run: |
+          set -euo pipefail
           gh release create "$tag" \
               --repo="$GITHUB_REPOSITORY" \
               --title="Version ${tag#v}" \
               --generate-notes \
-              $BUNDLE_FILENAME
+              "$FCSTD_BUNDLE" \
+              "$STEP_BUNDLE"

@@ -1,0 +1,190 @@
+name: Build STEP files
+
+# Regenerates the fabrication STEP files from the FreeCAD documents and uploads them as one artifact.
+# Runs on pushes and pull requests as a verification gate.
+# Also called by release.yaml, which attaches the artifact to a release.
+# This workflow never commits anything and never modifies a release.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+  # Called by release.yaml with no inputs.
+  # The artifact name is derived from the git ref, so a run on a v* tag produces a tag-suffixed artifact.
+  # A reusable workflow must also declare outputs under workflow_call.
+  # A job-level outputs alone hands the caller an empty string with no error.
+  workflow_call:
+    outputs:
+      artifact:
+        description: "Name of the uploaded artifact containing the generated STEP files."
+        value: ${{ jobs.step-files.outputs.artifact }}
+
+permissions:
+  contents: read
+
+env:
+  # Pinned so a FreeCAD upgrade cannot silently change exported geometry.
+  # Bump deliberately, and diff the generated STEP files before committing the new value.
+  FREECAD_VERSION: "1.1.4"
+  FREECAD_APPIMAGE: "FreeCAD_1.1.4-Linux-x86_64-py311.AppImage"
+  FREECAD_APPIMAGE_SHA256: "f6dc6ba676e5ac96a565ebc8d657232f94c6158e85b4352141bd1a46f6b43434"
+
+jobs:
+  step-files:
+    name: Export STEP files
+    outputs:
+      artifact: ${{ steps.artifact-name.outputs.artifact }}
+
+    # ubuntu-24.04 rather than ubuntu-latest, because the pinned AppImage targets that release.
+    # Several steps use process substitution, so pin bash instead of the runner default.
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      # A run on a release tag gets a tag-suffixed name so the asset is self-describing.
+      # Every other trigger gets the plain name.
+      - name: Choose the artifact name
+        id: artifact-name
+        run: |
+          set -euo pipefail
+          base=zenith-ch750sd-step-files
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            echo "artifact=${base}-${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "artifact=${base}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out the models
+        uses: actions/checkout@v5
+
+      - name: Cache the FreeCAD AppImage
+        uses: actions/cache@v4
+        id: cache
+        with:
+          path: ${{ runner.temp }}/freecad/${{ env.FREECAD_APPIMAGE }}
+          key: freecad-${{ env.FREECAD_VERSION }}-x86_64-py311
+
+      - name: Download FreeCAD
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/freecad"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/freecad/${FREECAD_APPIMAGE}" \
+            "https://github.com/FreeCAD/FreeCAD/releases/download/${FREECAD_VERSION}/${FREECAD_APPIMAGE}"
+
+      - name: Verify the download
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/freecad"
+          echo "${FREECAD_APPIMAGE_SHA256}  ${FREECAD_APPIMAGE}" | sha256sum --check
+
+      - name: Install FreeCAD
+        run: |
+          set -euo pipefail
+          # FreeCAD ships its own Qt and OCCT; these are the system libraries it still links against.
+          # FUSE is unavailable on runners, so the AppImage must be extracted rather than mounted.
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            squashfs-tools \
+            libgl1 \
+            libglib2.0-0t64 \
+            libxkbcommon0 \
+            libxkbcommon-x11-0 \
+            libxcb-cursor0 \
+            libxcb-icccm4 \
+            libxcb-image0 \
+            libxcb-keysyms1 \
+            libxcb-randr0 \
+            libxcb-render-util0 \
+            libxcb-shape0 \
+            libxcb-shm0 \
+            libxcb-util1 \
+            libxcb-xinerama0 \
+            libxcb-xkb0 \
+            libfontconfig1
+          cd "$RUNNER_TEMP/freecad"
+          chmod +x "$FREECAD_APPIMAGE"
+          ./"$FREECAD_APPIMAGE" --appimage-extract
+          # Locate the console binary and library directory rather than assuming a path.
+          # A layout change in a future AppImage then fails loudly instead of half-working.
+          # realpath keeps them absolute; find returns paths relative to the current directory.
+          bindir=$(realpath "$(dirname "$(find squashfs-root -type f -name freecadcmd -perm -u+x | head -n1)")")
+          if [ ! -x "$bindir/freecadcmd" ]; then
+            echo "::error::freecadcmd not found in the extracted AppImage"
+            find squashfs-root -maxdepth 3 -type d | sort | head -40
+            exit 1
+          fi
+          libdir=$(realpath "$(find squashfs-root -maxdepth 3 -type d -name lib | head -n1)")
+          echo "Found $bindir/freecadcmd with libraries in $libdir"
+          echo "$bindir" >> "$GITHUB_PATH"
+          echo "LD_LIBRARY_PATH=$libdir" >> "$GITHUB_ENV"
+
+      - name: Check FreeCAD starts
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          set -euo pipefail
+          freecadcmd --version
+          printf 'import Part\nprint("smoke test box volume:", Part.makeBox(1, 2, 3).Volume)\n' > "$RUNNER_TEMP/smoke.py"
+          freecadcmd "$RUNNER_TEMP/smoke.py"
+
+      # The export script never saves, so the Sheet Metal workbench is not needed here.
+      # It reads the shapes FreeCAD already cached inside each file.
+      # Keeping the add-on out of CI proves the exporter has no dependency on it.
+      # Configuration travels by environment variable, because freecadcmd treats any argument after the script name as a document to open.
+      - name: Export STEP files
+        env:
+          QT_QPA_PLATFORM: offscreen
+          ZENITH_STEP_MANIFEST: scripts/parts.manifest
+          ZENITH_STEP_DIR: step
+          ZENITH_STEP_FORCE: "1"
+        run: |
+          set -euo pipefail
+          freecadcmd scripts/export_step.py
+
+      - name: Confirm the source models were not modified
+        run: |
+          set -euo pipefail
+          # A save is the failure mode to catch, because it strips the Sheet Metal feature proxies from documents opened without the add-on installed.
+          # A save necessarily rewrites the tracked .FCStd, so a clean diff is the reliable signal.
+          # Verified against FreeCAD 1.1.4: opening a document creates nothing, saving rewrites it.
+          # Untracked .FCStd files are normal here, so a bare git status would false-alarm.
+          if ! git diff --quiet -- '*.FCStd'; then
+            echo "::error::export modified a tracked FreeCAD document"
+            git status --porcelain -- '*.FCStd'
+            exit 1
+          fi
+          echo "No FreeCAD document was modified."
+
+      # step/ contains only generated files, so it can be uploaded without staging a copy.
+      # The check matters because upload-artifact succeeds silently when a declared file is missing.
+      - name: Confirm every expected file was written
+        run: |
+          set -euo pipefail
+          expected=0
+          while IFS= read -r step_file; do
+            expected=$((expected + 1))
+            if [ ! -s "$step_file" ]; then
+              echo "::error file=${step_file}::missing or empty"
+              exit 1
+            fi
+            printf 'ok   %s (%s bytes)\n' "$step_file" "$(wc -c < "$step_file" | tr -d ' ')"
+          done < <(make step-files)
+          actual=$(find step -maxdepth 1 -type f -name '*.step' | wc -l | tr -d ' ')
+          if [ "$actual" -ne "$expected" ]; then
+            echo "::error::step/ holds $actual of $expected expected STEP files"
+            exit 1
+          fi
+          echo "Wrote $actual STEP files."
+
+      - name: Upload STEP files
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.artifact-name.outputs.artifact }}
+          path: step
+          if-no-files-found: error
+          retention-days: 30
