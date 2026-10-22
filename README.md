@@ -24,7 +24,7 @@ The build reads `scripts/parts.manifest`, which lists one line per output file:
 
 Everything is written into the `step` directory at the repository root, and every filename there is unique. `make clean` removes the directory; `make clean-steps` removes just the declared files.
 
-Only parts that are missing or older than their source document get rebuilt. `make check` re-exports everything and verifies each file, `make list` shows what would be built, and `make help` lists the rest. It's also fine to skip FreeCAD entirely and export manually in the FreeCAD GUI — just keep the filenames matching the manifest.
+Only parts that are missing or older than their source document get rebuilt. `make check` re-exports everything and verifies each file, `make list` shows what would be built, and `make help` lists the rest. It's also fine to skip `make` and export the parts by hand in the FreeCAD GUI — just keep the filenames matching the manifest.
 
 If you'd rather not install FreeCAD at all, the GitHub Actions workflow regenerates every STEP file on each change and attaches them to the run as a downloadable artifact. Open the workflow run, then download `zenith-ch750sd-step-files-...` from the Artifacts list at the bottom of the summary page. Releases also carry the STEP files as a zip alongside the FreeCAD source files.
 

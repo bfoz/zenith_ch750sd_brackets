@@ -6,7 +6,9 @@ Guidance for AI agents working in this repository. Read this before making chang
 
 Parametric FreeCAD models of custom sheet-metal brackets for a Zenith CH750 Super Duty amateur-built aircraft: wire/cable/hose routing, elevator pulleys, parking brake valve, rudder pedal bearings.
 
-This is **not a software project**. There is no build system, no dependency manifest, no test suite, no linter, and no CI beyond a release workflow. Don't look for `package.json`, `Makefile`, or `pytest`, and don't add any.
+This is **not a software project**. There is no application to build, no dependency manifest, no test suite, and no linter. Don't look for `package.json` or `pytest`, and don't add any.
+
+What does exist is a STEP export pipeline: the `Makefile`, `scripts/parts.manifest`, `scripts/export_step.py`, and the `step-files.yaml` workflow (see Building STEP files). `make` is the only build command, and its only job is to regenerate derived fabrication files from the FreeCAD documents.
 
 The deliverables are the `*.FCStd` FreeCAD source documents (canonical), `README.md` (fabrication notes, parts lists, installation steps — equally important), and the derived `*.step`/`*.dxf`/`*.svg` files builders send to cut shops.
 
@@ -26,7 +28,6 @@ Other `.FCStd` files are **not** bracket models and have no parts to build: `ELT
 Other paths:
 
 - `mcmaster/` — McMaster-Carr supplier STEP models for purchased hardware
-- `RudderPedalAssembly/` — per-body STEP exports for that assembly
 - `scripts/` — `parts.manifest` and `export_step.py` (see Building STEP files)
 - `.github/workflows/release.yaml` — release automation; `step-files.yaml` — STEP generation (see Releases)
 - `test.pdf`, `test1.pdf`, `export_stl.applescript`, `stl/`, `__pycache__/`, `.env` — scratch and local tooling, referenced by nothing; leave them untracked unless asked
@@ -38,9 +39,13 @@ Other paths:
 
 ### The Sheet Metal workbench add-on is a hard dependency
 
-Every sheet-metal body starts from `BaseShape`, a `PartDesign::FeaturePython` supplied by the Sheet Metal Workbench add-on (`SheetMetalBaseShapeCmd`, class `SMBaseShape`). All six documents depend on it.
+Most sheet-metal bodies start from `BaseShape`, a `PartDesign::FeaturePython` supplied by the Sheet Metal Workbench add-on (`SheetMetalBaseShapeCmd`, class `SMBaseShape`). All seven bracket documents depend on the add-on, but not all through the same feature:
 
-It is installed at `~/Library/Application Support/FreeCAD/v1-1/Mod/sheetmetal`. Note the version-specific `v1-1` path segment — FreeCAD 1.1 does **not** use `~/Library/Application Support/FreeCAD/Mod`, so don't conclude the add-on is missing from that path. Verify with `import SheetMetalBaseShapeCmd` under `freecadcmd`, or by checking that a `Proxy` element in `Document.xml` carries `module="SheetMetalBaseShapeCmd"`.
+- `SheetMetalBaseShapeCmd` (`SMBaseShape`) — TrailingEdgeBracket, ElevatorPulleyBracket, MatcoParkingBrakeBracket, RudderPedalBracketAssembly, FuelReturnHoseBracket
+- `SheetMetalBaseCmd` (`SMBaseBend`) plus `SheetMetalFoldCmd` (`SMFoldWall`) — `ACK_E04_ELT_Bracket`, which has **no** `BaseShape` object at all. Don't assume a document is missing its base feature just because a search for `BaseShape` finds nothing; the `Fold` walls are its add-on features.
+- `JointObject` (the Assembly workbench, built into FreeCAD) — ElevatorPulleyBracket, MatcoParkingBrakeBracket, RudderPedalBracketAssembly
+
+It is installed at `~/Library/Application Support/FreeCAD/v1-1/Mod/sheetmetal`. Note the version-specific `v1-1` path segment — FreeCAD 1.1 does **not** use `~/Library/Application Support/FreeCAD/Mod`, so don't conclude the add-on is missing from that path. The reliable check is the module names above: `unzip -p <Model>.FCStd Document.xml | grep -o 'module="[^"]*"'`.
 
 With the add-on available, `BaseShape.Proxy` restores as a live `SMBaseShape` and headless scripting works properly.
 
@@ -50,7 +55,7 @@ FreeCAD blocks restoring an add-on-backed feature whose module can't be imported
 
 Never save a document that logged that message. Close it without saving, install the add-on, then reopen.
 
-This has already happened once and the damage is permanent. `WingtipWireBracket.FCStd` was upgraded from the FreeCAD 1.0 document format and saved while the add-on was missing (2026-10-13). Its `BaseShape` is now a static shape with `Proxy = null` and no module reference, where the other five documents still carry `module="SheetMetalBaseShapeCmd"`. Installing the add-on afterwards does **not** repair it — re-saving leaves the proxy null, because the object in the file no longer names a module to restore.
+This has already happened once and the damage is permanent. `WingtipWireBracket.FCStd` was upgraded from the FreeCAD 1.0 document format and saved while the add-on was missing (2026-10-13). Its `BaseShape` is now a static shape with `Proxy = null` and no module reference at all — `grep -o 'module="[^"]*"'` on that file returns nothing, where every other bracket document still names its add-on modules. Installing the add-on afterwards does **not** repair it — re-saving leaves the proxy null, because the object in the file no longer names a module to restore.
 
 What was lost in that file, precisely:
 
@@ -116,13 +121,14 @@ freecadcmd quirks that will bite you (all encoded in the script):
 
 ### Untracked files — do not auto-stage
 
-Tracked files are the `.FCStd` documents, `README.md`, `AGENTS.md`, `Makefile`, `scripts/`, `.github/`, and one `mcmaster/` supplier model. Everything else in the working tree is untracked: all generated `*.step` files, the hand-made `*.dxf`/`*.svg` unfold drawings, `RudderPedalAssembly/`, a second `mcmaster/` model, and `test.pdf`/`test1.pdf`. Whether those belong in git is the maintainer's call, not an agent's. Never run `git add -A` or `git add .` here; stage explicit paths and surface the ambiguity to the user instead of resolving it silently.
+Tracked files are the `.FCStd` documents, `README.md`, `AGENTS.md`, `Makefile`, `scripts/`, `.github/`, and one `mcmaster/` supplier model. Everything else in the working tree is untracked: the generated `step/` directory, the hand-made `*.dxf`/`*.svg` unfold drawings, a second `mcmaster/` model, and `test.pdf`/`test1.pdf`. Whether those belong in git is the maintainer's call, not an agent's. Never run `git add -A` or `git add .` here; stage explicit paths and surface the ambiguity to the user instead of resolving it silently.
 
 ## Workflows
 
 `.github/workflows/step-files.yaml` builds the STEP files. It runs on push to `main`, on pull requests, on `workflow_dispatch`, and is called by the release workflow. It installs the pinned FreeCAD AppImage, exports with `ZENITH_STEP_FORCE=1`, asserts that no tracked `.FCStd` changed, verifies every declared file was written, and uploads the `step/` directory as an artifact named `zenith-ch750sd-step-files` (`-<tag>` when triggered by a tag) retained 30 days. Nothing is committed back and no release is modified by this workflow.
 
 - The FreeCAD version is pinned by asset name and SHA256 in the workflow `env` block. Bump it deliberately and diff the output, because a FreeCAD upgrade can change exported geometry. It runs on `ubuntu-24.04`, not `ubuntu-latest`, so a runner image bump can't strand the pinned AppImage.
+- apt reports almost every failure as exit 100 without naming the cause, and full logs on a public repository need a browser. The install step therefore treats both apt commands as non-fatal and retries the install package by package, and the smoke test runs `ldd` against `freecadcmd` and fails with an annotation naming every unresolved library. Read the annotations before theorising about an exit 100; the first such failure was a typo'd package name (`libxcb-xkb0`, which never existed; the real one is `libxcb-xkb1`).
 - The exporter reads cached shapes, so the workflow does **not** install the Sheet Metal workbench. Keeping the add-on out of CI proves the exporter doesn't depend on it. If a model ever needs recomputation to export correctly, fix the document in the GUI rather than adding the add-on to CI.
 - Being called is declared under `on.workflow_call`, including a workflow-level `outputs.artifact`. A reusable workflow must redeclare its outputs there; a job-level `outputs:` alone hands the caller an empty string with no error.
 
