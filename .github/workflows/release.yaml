@@ -42,8 +42,10 @@ jobs:
           fi
           echo "Downloading artifact: $ARTIFACT"
 
+      # v8 verifies a digest on every download and fails the run if it does not match, rather than
+      # warning. For files that get handed to a cut shop, a corrupt download should stop the release.
       - name: Download the generated STEP files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ needs.step-files.outputs.artifact }}
           path: steps
