@@ -87,25 +87,46 @@ jobs:
           set -euo pipefail
           # FreeCAD ships its own Qt and OCCT; these are the system libraries it still links against.
           # FUSE is unavailable on runners, so the AppImage must be extracted rather than mounted.
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            squashfs-tools \
-            libgl1 \
-            libglib2.0-0t64 \
-            libxkbcommon0 \
-            libxkbcommon-x11-0 \
-            libxcb-cursor0 \
-            libxcb-icccm4 \
-            libxcb-image0 \
-            libxcb-keysyms1 \
-            libxcb-randr0 \
-            libxcb-render-util0 \
-            libxcb-shape0 \
-            libxcb-shm0 \
-            libxcb-util1 \
-            libxcb-xinerama0 \
-            libxcb-xkb0 \
-            libfontconfig1
+          #
+          # apt reports nearly every failure as exit 100 without saying what failed, including a
+          # refresh that trips over a third-party source in the runner image. That is what killed the
+          # first run: it died in four seconds, too fast to have installed anything, and every
+          # package name below is valid on noble. Neither apt command is therefore fatal here. A
+          # mirror hiccup is far likelier than a bad name, and runner images ship usable package
+          # lists, so continuing past a failed refresh is sound. What actually decides whether this
+          # workflow works is the smoke test, which names anything genuinely missing.
+          if ! sudo apt-get update; then
+            echo "::warning::apt-get update failed; retrying once"
+            sleep 5
+            if ! sudo apt-get update; then
+              echo "::warning::apt-get update still failing; continuing with the lists in the runner image"
+            fi
+          fi
+          # Install in bulk first, because that is where apt resolves versions sensibly. If that
+          # fails, retry one package at a time so the log names the offender instead of exiting 100
+          # on the whole set. Only a library the AppImage really needs matters, and that is
+          # identified by name in the next step.
+          packages=(
+            squashfs-tools libgl1 libglib2.0-0t64 libfontconfig1
+            libxkbcommon0 libxkbcommon-x11-0 libxcb-cursor0
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
+            libxcb-render-util0 libxcb-shape0 libxcb-shm0
+            libxcb-util1 libxcb-xinerama0 libxcb-xkb0
+          )
+          if ! sudo apt-get install -y --no-install-recommends "${packages[@]}"; then
+            echo "::warning::bulk dependency install failed; retrying package by package"
+            unavailable=()
+            for pkg in "${packages[@]}"; do
+              if ! sudo apt-get install -y --no-install-recommends "$pkg" >/dev/null 2>&1; then
+                unavailable+=("$pkg")
+              fi
+            done
+            if [ ${#unavailable[@]} -gt 0 ]; then
+              echo "::warning::could not install: ${unavailable[*]}"
+            else
+              echo "::notice::all dependencies installed on retry"
+            fi
+          fi
           cd "$RUNNER_TEMP/freecad"
           chmod +x "$FREECAD_APPIMAGE"
           ./"$FREECAD_APPIMAGE" --appimage-extract
@@ -128,7 +149,18 @@ jobs:
           QT_QPA_PLATFORM: offscreen
         run: |
           set -euo pipefail
+          # The authoritative dependency check. ldd honors the LD_LIBRARY_PATH the previous step exported,
+          # so anything still unresolved here is genuinely absent from the runner. Naming the libraries
+          # in an annotation beats a bare loader error buried in a log that needs a browser to read.
+          # The trailing || true matters: set -e would otherwise abort on a failed ldd before the
+          # annotation below can name the problem.
+          missing=$(ldd "$(command -v freecadcmd)" 2>/dev/null | awk '/not found/ {print $1}' | sort -u | tr '\n' ' ' || true)
+          if [ -n "$missing" ]; then
+            echo "::error::freecadcmd cannot resolve: $missing"
+            exit 1
+          fi
           freecadcmd --version
+          # And a real kernel operation, not just a startup, so a broken OCCT shows up before the export step.
           printf 'import Part\nprint("smoke test box volume:", Part.makeBox(1, 2, 3).Volume)\n' > "$RUNNER_TEMP/smoke.py"
           freecadcmd "$RUNNER_TEMP/smoke.py"
 
