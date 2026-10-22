@@ -88,13 +88,13 @@ jobs:
           # FreeCAD ships its own Qt and OCCT; these are the system libraries it still links against.
           # FUSE is unavailable on runners, so the AppImage must be extracted rather than mounted.
           #
-          # apt reports nearly every failure as exit 100 without saying what failed, including a
-          # refresh that trips over a third-party source in the runner image. That is what killed the
-          # first run: it died in four seconds, too fast to have installed anything, and every
-          # package name below is valid on noble. Neither apt command is therefore fatal here. A
-          # mirror hiccup is far likelier than a bad name, and runner images ship usable package
-          # lists, so continuing past a failed refresh is sound. What actually decides whether this
-          # workflow works is the smoke test, which names anything genuinely missing.
+          # apt aborts a bulk install at the first unknown package name, and reports almost every
+          # failure as exit 100. On a public repository, where full logs need a browser, the only
+          # surviving clue is the number. The first run died that way over a single bad name: the list
+          # asked for libxcb-xkb0, which has never existed, where the package is libxcb-xkb1.
+          # Neither apt command is fatal on its own, so a wrong name or a mirror hiccup degrades into
+          # a warning that says which package. The smoke test stays the real gate, because it decides
+          # whether anything actually matters by checking what freecadcmd links against.
           if ! sudo apt-get update; then
             echo "::warning::apt-get update failed; retrying once"
             sleep 5
@@ -111,7 +111,7 @@ jobs:
             libxkbcommon0 libxkbcommon-x11-0 libxcb-cursor0
             libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0
             libxcb-render-util0 libxcb-shape0 libxcb-shm0
-            libxcb-util1 libxcb-xinerama0 libxcb-xkb0
+            libxcb-util1 libxcb-xinerama0 libxcb-xkb1
           )
           if ! sudo apt-get install -y --no-install-recommends "${packages[@]}"; then
             echo "::warning::bulk dependency install failed; retrying package by package"
