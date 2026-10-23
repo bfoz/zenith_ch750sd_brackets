@@ -4,3 +4,12 @@
 
 # Generated STEP files, built by make into this directory
 step/
+
+# Local secrets (API tokens) - never commit
+.env
+
+# Python bytecode from scripts/
+__pycache__/
+
+# macOS metadata
+.DS_Store

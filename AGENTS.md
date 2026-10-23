@@ -10,7 +10,7 @@ This is **not a software project**. There is no application to build, no depende
 
 What does exist is a STEP export pipeline: the `Makefile`, `scripts/parts.manifest`, `scripts/export_step.py`, and the `step-files.yaml` workflow (see Building STEP files). `make` is the only build command, and its only job is to regenerate derived fabrication files from the FreeCAD documents.
 
-The deliverables are the `*.FCStd` FreeCAD source documents (canonical), `README.md` (fabrication notes, parts lists, installation steps — equally important), and the derived `*.step`/`*.dxf`/`*.svg` files builders send to cut shops.
+The deliverables are the `*.FCStd` FreeCAD source documents (canonical), `README.md` (fabrication notes, parts lists, installation steps — equally important), and the derived `*.step` files builders send to cut shops.
 
 ## Repository inventory
 
@@ -30,7 +30,7 @@ Other paths:
 - `mcmaster/` — McMaster-Carr supplier STEP models for purchased hardware
 - `scripts/` — `parts.manifest` and `export_step.py` (see Building STEP files)
 - `.github/workflows/release.yaml` — release automation; `step-files.yaml` — STEP generation (see Releases)
-- `test.pdf`, `test1.pdf`, `export_stl.applescript`, `stl/`, `__pycache__/`, `.env` — scratch and local tooling, referenced by nothing; leave them untracked unless asked
+- `export_stl.applescript` and `stl/` — scratch STL tooling, referenced by nothing; leave them untracked unless asked (`__pycache__/` directories and `.env` are gitignored)
 
 ## FreeCAD environment
 
@@ -104,8 +104,8 @@ freecadcmd quirks that will bite you (all encoded in the script):
 
 1. **Edit models in the GUI, generate exports with make.** Model changes are made in FreeCAD (by a human, or with the add-on installed) and then committed. Regenerating STEP files is safe to automate with `make`; editing parametric geometry headlessly is not. Agents may inspect models, regenerate exports, and update `README.md`.
 2. **README and model must stay in sync.** Every bracket section follows the same shape: intro prose, optional `### Fabrication`, `### Bushings and Grommets` and/or `### Parts` (Part number / Quantity / Description table with Aircraft Spruce and McMaster links), then `### Installation` as numbered steps. A new bracket needs a matching README section in the same commit.
-3. **Fabrication files: STEP first.** Unfolded DXF output has been unreliable with Send Cut Send (see the June 2025 note in the README). Prefer STEP exports for ordering and keep DXFs only where they demonstrably still work.
-4. **Naming convention for derived files:** `<DocumentName>-<BodyLabel>.step` and `<DocumentName>-<BodyLabel>_Unfold.dxf`. Spaces in body labels become underscores in DXFs but stay spaces in STEPs, e.g. `MatcoParkingBrakeBracket-Top Bracket.step` vs `MatcoParkingBrakeBracket-Top_Bracket_Unfold.dxf`. The manifest is authoritative for STEP names; this rule is what it follows, and DXFs are still hand-made.
+3. **Fabrication files: STEP first.** Unfolded DXF output has been unreliable with Send Cut Send (see the June 2025 note in the README). Prefer STEP exports for ordering; the hand-made DXF/SVG unfold drawings that used to sit in the tree have been deleted and are not maintained.
+4. **Naming convention for derived files:** `<DocumentName>-<BodyLabel>.step`. Spaces in body labels stay spaces in STEP filenames, e.g. `MatcoParkingBrakeBracket-Top Bracket.step`. The manifest is authoritative for STEP names.
 5. **Right-wing parts are mirrored.** Most brackets are modelled for the left wing and the README tells builders to flip the bend angle (or have the cut shop duplicate the part with a reversed bend). Don't silently add duplicate mirrored geometry — document the flip instead.
 6. **Amateur-built aircraft, safety-relevant.** These are published as a workable option, not a certified engineering drawing. Keep the README's hedging ("can be used", "feel free to adjust", "verify fit") instead of prescriptive absolutes, keep exact hardware part numbers and quantities, and flag permanent or destructive steps such as the epoxy-bonded M4 studs on the parking brake bracket. Never delete an existing caution.
 7. **Binary files can't be diffed.** `git diff` on a `.FCStd` shows only a byte-count change. Verify model edits by re-opening the file headlessly and inspecting the affected bodies, or ask the user to eyeball them in the GUI.
@@ -121,7 +121,7 @@ freecadcmd quirks that will bite you (all encoded in the script):
 
 ### Untracked files — do not auto-stage
 
-Tracked files are the `.FCStd` documents, `README.md`, `AGENTS.md`, `Makefile`, `scripts/`, `.github/`, and one `mcmaster/` supplier model. Everything else in the working tree is untracked: the generated `step/` directory, the hand-made `*.dxf`/`*.svg` unfold drawings, a second `mcmaster/` model, and `test.pdf`/`test1.pdf`. Whether those belong in git is the maintainer's call, not an agent's. Never run `git add -A` or `git add .` here; stage explicit paths and surface the ambiguity to the user instead of resolving it silently.
+Tracked files are the seven fabricated-part `.FCStd` documents, `README.md`, `AGENTS.md`, `Makefile`, `scripts/`, `.github/`, and one `mcmaster/` supplier model. Untracked in the working tree: the three non-part documents (`ELT_reference.FCStd`, `ch750sd.FCStd`, `sd750.FCStd`) and the scratch `ch750sd.py`, plus the generated `step/` directory, a second `mcmaster/` model, and `export_stl.applescript`/`stl/`. Whether those belong in git is the maintainer's call, not an agent's. `.env`, `__pycache__/`, and `.DS_Store` are gitignored. Never run `git add -A` or `git add .` here; stage explicit paths and surface the ambiguity to the user instead of resolving it silently.
 
 ## Workflows
 
@@ -135,9 +135,9 @@ Tracked files are the `.FCStd` documents, `README.md`, `AGENTS.md`, `Makefile`, 
 
 `.github/workflows/release.yaml` fires on any pushed `v*` tag, calls `step-files.yaml` first, and attaches **two** assets to the release as a named pair, `<repo-name>-<tag>-<contents>.zip`: `-FreeCAD.zip` containing every `*.FCStd`, and `-STEP.zip` containing the generated STEP files flattened into a single directory. Both bundle names derive from `github.event.repository.name`, so renaming the repository renames the assets; the `zenith-ch750sd-step-files` artifact name in `step-files.yaml` is hardcoded, and after the October 2026 rename it happens to match the repository name in its hyphenated form.
 
-- DXF and SVG unfold drawings are still not in any bundle; they are hand-made and unreliably generated (see the June 2025 note in the README).
+- DXF and SVG unfold drawings are not in any bundle; they were hand-made, unreliably generated (see the June 2025 note in the README), and are no longer kept in the working tree.
 - The STEP bundle is flattened with `zip -j`, so two parts sharing a basename would silently overwrite each other. The release workflow detects collisions and fails; if it fires, rename the manifest output for the new part rather than renaming a body.
-- Tag format is `v<version>` (`v0` and `v1` exist) and release titles are `Version <version>`. Don't create or push tags unless explicitly asked. Published releases keep the asset names they went out with, so the naming has drifted across them: `v0` ships a bare `zenith_ch750sd_brackets.zip`, `v1` ships `zenith_ch750sd_brackets.zip` plus `zenith_ch750sd_brackets-v1-steps.zip`, and only tags pushed after this workflow is used again produce the `-FreeCAD.zip` / `-STEP.zip` pair. GitHub redirects old release and asset URLs, so those links keep working across a repository rename.
+- Tag format is `v<version>` and release titles are `Version <version>`. The tags are `v0`, `v1` and `v1.0.1`, each with a release; a stray `v0.1` tag left over from an old interactive rebase was deleted in October 2026. Don't create, push, delete or "clean up" tags unless explicitly asked. Published releases keep the asset names they went out with, so the naming has drifted across them: `v0` ships a bare `zenith_ch750sd_brackets.zip`, `v1` ships `zenith_ch750sd_brackets.zip` plus `zenith_ch750sd_brackets-v1-steps.zip`, and `v1.0.1` is the first tag to ship the current `<repo>-<tag>-FreeCAD.zip` / `-STEP.zip` pair (verified live: `zenith_ch750sd-v1.0.1-FreeCAD.zip` and `zenith_ch750sd-v1.0.1-STEP.zip`). GitHub redirects old release and asset URLs, so those links keep working across a repository rename.
 
 ## Sanity checks an agent can actually run
 
