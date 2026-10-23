@@ -4,7 +4,7 @@ Guidance for AI agents working in this repository. Read this before making chang
 
 ## What this is
 
-Parametric FreeCAD models of custom sheet-metal brackets for a Zenith CH750 Super Duty amateur-built aircraft: wire/cable/hose routing, elevator pulleys, parking brake valve, rudder pedal bearings.
+Parametric FreeCAD models of custom sheet-metal parts for a Zenith CH750 Super Duty amateur-built aircraft: wire/cable/hose routing, elevator pulleys, parking brake valve, rudder pedal bearings. Most are brackets; the repository is not limited to brackets.
 
 This is **not a software project**. There is no application to build, no dependency manifest, no test suite, and no linter. Don't look for `package.json` or `pytest`, and don't add any.
 
@@ -14,7 +14,7 @@ The deliverables are the `*.FCStd` FreeCAD source documents (canonical), `README
 
 ## Repository inventory
 
-FreeCAD documents that define brackets (these are the ones in `scripts/parts.manifest`):
+FreeCAD documents that define parts to fabricate (these are the ones in `scripts/parts.manifest`):
 
 - `TrailingEdgeBracket.FCStd` — the big one, 7 bodies: `Body`, `Grommets`, `SnapBushings`, `BushingsGrommets`, `Body2Bushings3Grommets`, `OutboardTrailingEdgeBracket`, `OutboardTrailingEdgeBracketTape`
 - `ElevatorPulleyBracket.FCStd` — `Bracket` + `Base` (to be fabricated), `Pulley` (reference only), plus an `Assembly` with joints
@@ -23,7 +23,7 @@ FreeCAD documents that define brackets (these are the ones in `scripts/parts.man
 - `ACK_E04_ELT_Bracket.FCStd` — `ACK_E04_ELT_Bracket` (fab) plus `ACK_E04_ELT`, a reference model of the ELT itself
 - `FuelReturnHoseBracket.FCStd` and `WingtipWireBracket.FCStd` — single body each
 
-Other `.FCStd` files are **not** bracket models and have no parts to build: `ELT_reference.FCStd`, `ch750sd.FCStd`, `sd750.FCStd` (all contain zero `PartDesign::Body` objects; `ch750sd.FCStd` is populated by the scratch script `ch750sd.py`). Don't add them to the manifest, and don't treat an empty body list in them as a bug.
+Other `.FCStd` files are **not** part models and have no parts to build: `ELT_reference.FCStd`, `ch750sd.FCStd`, `sd750.FCStd` (all contain zero `PartDesign::Body` objects; `ch750sd.FCStd` is populated by the scratch script `ch750sd.py`). Don't add them to the manifest, and don't treat an empty body list in them as a bug.
 
 Other paths:
 
@@ -133,11 +133,11 @@ Tracked files are the `.FCStd` documents, `README.md`, `AGENTS.md`, `Makefile`, 
 - The exporter reads cached shapes, so the workflow does **not** install the Sheet Metal workbench. Keeping the add-on out of CI proves the exporter doesn't depend on it. If a model ever needs recomputation to export correctly, fix the document in the GUI rather than adding the add-on to CI.
 - Being called is declared under `on.workflow_call`, including a workflow-level `outputs.artifact`. A reusable workflow must redeclare its outputs there; a job-level `outputs:` alone hands the caller an empty string with no error.
 
-`.github/workflows/release.yaml` fires on any pushed `v*` tag, calls `step-files.yaml` first, and attaches **two** assets to the release as a named pair: `<repo-name>-FreeCAD.zip` containing every `*.FCStd`, and `<repo-name>-<tag>-STEP.zip` containing the generated STEP files flattened into a single directory. Both bundle names derive from `github.event.repository.name`, so renaming the repository renames the assets; the `zenith-ch750sd-step-files` artifact name in `step-files.yaml` is hardcoded and would not follow a rename.
+`.github/workflows/release.yaml` fires on any pushed `v*` tag, calls `step-files.yaml` first, and attaches **two** assets to the release as a named pair, `<repo-name>-<tag>-<contents>.zip`: `-FreeCAD.zip` containing every `*.FCStd`, and `-STEP.zip` containing the generated STEP files flattened into a single directory. Both bundle names derive from `github.event.repository.name`, so renaming the repository renames the assets; the `zenith-ch750sd-step-files` artifact name in `step-files.yaml` is hardcoded and would not follow a rename.
 
 - DXF and SVG unfold drawings are still not in any bundle; they are hand-made and unreliably generated (see the June 2025 note in the README).
 - The STEP bundle is flattened with `zip -j`, so two parts sharing a basename would silently overwrite each other. The release workflow detects collisions and fails; if it fires, rename the manifest output for the new part rather than renaming a body.
-- Tag format is `v<version>` (`v0` and `v1` exist) and release titles are `Version <version>`. Don't create or push tags unless explicitly asked. Existing releases keep the asset names they were published with: `v0` ships `zenith_ch750sd_brackets.zip`, and only tags pushed after the rename produce the `-FreeCAD.zip` / `-STEP.zip` pair.
+- Tag format is `v<version>` (`v0` and `v1` exist) and release titles are `Version <version>`. Don't create or push tags unless explicitly asked. Published releases keep the asset names they went out with, so the naming has drifted across them: `v0` ships a bare `zenith_ch750sd_brackets.zip`, `v1` ships `zenith_ch750sd_brackets.zip` plus `zenith_ch750sd_brackets-v1-steps.zip`, and only tags pushed after this workflow is used again produce the `-FreeCAD.zip` / `-STEP.zip` pair. GitHub redirects old release and asset URLs, so those links keep working across a repository rename.
 
 ## Sanity checks an agent can actually run
 

@@ -1,6 +1,6 @@
-# Zenith CH750 Super Duty Brackets
+# Zenith CH750 Super Duty
 
-Custom brackets that can be used to improve wire, cable, and hose routing.
+Custom sheet-metal parts and brackets that can be used to improve wire, cable, and hose routing and to mount accessories.
 
 ## Fabrication
 
@@ -13,7 +13,7 @@ NOTE: As of June 2025, the unfolded files don't work well with [Send Cut Send](h
 
 ### Regenerating the STEP files
 
-The STEP files for every bracket are generated from the FreeCAD documents, so they always match the current models. If you change a model and want updated fabrication files, or you've cloned the repository and want to build them yourself:
+The STEP files for every part are generated from the FreeCAD documents, so they always match the current models. If you change a model and want updated fabrication files, or you've cloned the repository and want to build them yourself:
 
 1. Install [FreeCAD](https://www.freecad.org) 1.1 or later
 2. Run `make` in the repository root
@@ -26,7 +26,7 @@ Everything is written into the `step` directory at the repository root, and ever
 
 Only parts that are missing or older than their source document get rebuilt. `make check` re-exports everything and verifies each file, `make list` shows what would be built, and `make help` lists the rest. It's also fine to skip `make` and export the parts by hand in the FreeCAD GUI — just keep the filenames matching the manifest.
 
-If you'd rather not install FreeCAD at all, the GitHub Actions workflow regenerates every STEP file on each change and attaches them to the run as a downloadable artifact. Open the workflow run, then download `zenith-ch750sd-step-files-...` from the Artifacts list at the bottom of the summary page. Each release carries two zips: `<repo>-<tag>-STEP.zip` with the fabricated parts for the cut shop, and `<repo>-FreeCAD.zip` with the source documents.
+If you'd rather not install FreeCAD at all, the GitHub Actions workflow regenerates every STEP file on each change and attaches them to the run as a downloadable artifact. Open the workflow run, then download `zenith-ch750sd-step-files-...` from the Artifacts list at the bottom of the summary page. Each release carries two zips named `<repo>-<tag>-<contents>.zip`: the `-STEP.zip` holds the fabricated parts for a cut shop, and the `-FreeCAD.zip` holds the source documents.
 
 ## ACK E04 ELT Bracket
 

@@ -6,10 +6,11 @@ on:
       - 'v*'
 
 env:
-  # The two assets are named as an explicit pair so the release page says which is which:
-  # the FreeCAD source documents, and the generated STEP files for the cut shop.
-  # Named after the STEP file format, not a step count, so the plural reads correctly either way.
-  FCSTD_BUNDLE: ${{ github.event.repository.name }}-FreeCAD.zip
+  # The two assets are named as an explicit pair, <repo>-<tag>-<contents>.zip, so a downloaded file
+  # still says what it is and which model revision it holds once it is on someone's disk.
+  # The FreeCAD documents are checked out at the tag too, so both bundles are version-specific.
+  # STEP is the file format, not a step count; both suffixes read the same way singular or plural.
+  FCSTD_BUNDLE: ${{ github.event.repository.name }}-${{ github.ref_name }}-FreeCAD.zip
   STEP_BUNDLE: ${{ github.event.repository.name }}-${{ github.ref_name }}-STEP.zip
 
 jobs:
