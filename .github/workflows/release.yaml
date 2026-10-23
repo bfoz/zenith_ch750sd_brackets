@@ -6,8 +6,11 @@ on:
       - 'v*'
 
 env:
-  FCSTD_BUNDLE: ${{ github.event.repository.name }}.zip
-  STEP_BUNDLE: ${{ github.event.repository.name }}-${{ github.ref_name }}-steps.zip
+  # The two assets are named as an explicit pair so the release page says which is which:
+  # the FreeCAD source documents, and the generated STEP files for the cut shop.
+  # Named after the STEP file format, not a step count, so the plural reads correctly either way.
+  FCSTD_BUNDLE: ${{ github.event.repository.name }}-FreeCAD.zip
+  STEP_BUNDLE: ${{ github.event.repository.name }}-${{ github.ref_name }}-STEP.zip
 
 jobs:
   step-files:

@@ -133,11 +133,11 @@ Tracked files are the `.FCStd` documents, `README.md`, `AGENTS.md`, `Makefile`, 
 - The exporter reads cached shapes, so the workflow does **not** install the Sheet Metal workbench. Keeping the add-on out of CI proves the exporter doesn't depend on it. If a model ever needs recomputation to export correctly, fix the document in the GUI rather than adding the add-on to CI.
 - Being called is declared under `on.workflow_call`, including a workflow-level `outputs.artifact`. A reusable workflow must redeclare its outputs there; a job-level `outputs:` alone hands the caller an empty string with no error.
 
-`.github/workflows/release.yaml` fires on any pushed `v*` tag, calls `step-files.yaml` first, and attaches **two** assets to the release: `<repo-name>.zip` containing every `*.FCStd`, and `<repo-name>-<tag>-steps.zip` containing the generated STEP files flattened into a single directory.
+`.github/workflows/release.yaml` fires on any pushed `v*` tag, calls `step-files.yaml` first, and attaches **two** assets to the release as a named pair: `<repo-name>-FreeCAD.zip` containing every `*.FCStd`, and `<repo-name>-<tag>-STEP.zip` containing the generated STEP files flattened into a single directory. Both bundle names derive from `github.event.repository.name`, so renaming the repository renames the assets; the `zenith-ch750sd-step-files` artifact name in `step-files.yaml` is hardcoded and would not follow a rename.
 
 - DXF and SVG unfold drawings are still not in any bundle; they are hand-made and unreliably generated (see the June 2025 note in the README).
 - The STEP bundle is flattened with `zip -j`, so two parts sharing a basename would silently overwrite each other. The release workflow detects collisions and fails; if it fires, rename the manifest output for the new part rather than renaming a body.
-- Tag format is `v<version>` (`v0` exists) and release titles are `Version <version>`. Don't create or push tags unless explicitly asked.
+- Tag format is `v<version>` (`v0` and `v1` exist) and release titles are `Version <version>`. Don't create or push tags unless explicitly asked. Existing releases keep the asset names they were published with: `v0` ships `zenith_ch750sd_brackets.zip`, and only tags pushed after the rename produce the `-FreeCAD.zip` / `-STEP.zip` pair.
 
 ## Sanity checks an agent can actually run
 

@@ -26,7 +26,7 @@ Everything is written into the `step` directory at the repository root, and ever
 
 Only parts that are missing or older than their source document get rebuilt. `make check` re-exports everything and verifies each file, `make list` shows what would be built, and `make help` lists the rest. It's also fine to skip `make` and export the parts by hand in the FreeCAD GUI — just keep the filenames matching the manifest.
 
-If you'd rather not install FreeCAD at all, the GitHub Actions workflow regenerates every STEP file on each change and attaches them to the run as a downloadable artifact. Open the workflow run, then download `zenith-ch750sd-step-files-...` from the Artifacts list at the bottom of the summary page. Releases also carry the STEP files as a zip alongside the FreeCAD source files.
+If you'd rather not install FreeCAD at all, the GitHub Actions workflow regenerates every STEP file on each change and attaches them to the run as a downloadable artifact. Open the workflow run, then download `zenith-ch750sd-step-files-...` from the Artifacts list at the bottom of the summary page. Each release carries two zips: `<repo>-<tag>-STEP.zip` with the fabricated parts for the cut shop, and `<repo>-FreeCAD.zip` with the source documents.
 
 ## ACK E04 ELT Bracket
 
