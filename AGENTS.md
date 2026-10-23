@@ -113,7 +113,7 @@ freecadcmd quirks that will bite you (all encoded in the script):
 
 ## Git conventions
 
-- Remote `origin` is `git@github.com:bfoz/zenith_ch750sd_brackets.git` over SSH. The Gitea MCP tools configured in this session point at a different host, so don't assume the GitHub repo is reachable through them.
+- Remote `origin` is `git@github.com:bfoz/zenith_ch750sd.git` over SSH. The repository was renamed from `zenith_ch750sd_brackets` in October 2026; GitHub redirects the old URL, and `v0`/`v1` release assets keep their original filenames. The Gitea MCP tools configured in this session point at a different host, so don't assume the GitHub repo is reachable through them.
 - Commit messages are sentence case with no conventional-commit prefixes and describe the change as a complete thought: `Added brackets for the rudder pedals`, `Changed the Matco parking brake bracket bottom mounting holes to M4`, `Recomputed for FreeCAD 1.1`.
 - Reference issues with a `[#N]` prefix: `[#4] Added a bracket for the Matco parking brake valve`.
 - Use a commit body when the reason matters, e.g. why rivets became bonded studs.
@@ -133,7 +133,7 @@ Tracked files are the `.FCStd` documents, `README.md`, `AGENTS.md`, `Makefile`, 
 - The exporter reads cached shapes, so the workflow does **not** install the Sheet Metal workbench. Keeping the add-on out of CI proves the exporter doesn't depend on it. If a model ever needs recomputation to export correctly, fix the document in the GUI rather than adding the add-on to CI.
 - Being called is declared under `on.workflow_call`, including a workflow-level `outputs.artifact`. A reusable workflow must redeclare its outputs there; a job-level `outputs:` alone hands the caller an empty string with no error.
 
-`.github/workflows/release.yaml` fires on any pushed `v*` tag, calls `step-files.yaml` first, and attaches **two** assets to the release as a named pair, `<repo-name>-<tag>-<contents>.zip`: `-FreeCAD.zip` containing every `*.FCStd`, and `-STEP.zip` containing the generated STEP files flattened into a single directory. Both bundle names derive from `github.event.repository.name`, so renaming the repository renames the assets; the `zenith-ch750sd-step-files` artifact name in `step-files.yaml` is hardcoded and would not follow a rename.
+`.github/workflows/release.yaml` fires on any pushed `v*` tag, calls `step-files.yaml` first, and attaches **two** assets to the release as a named pair, `<repo-name>-<tag>-<contents>.zip`: `-FreeCAD.zip` containing every `*.FCStd`, and `-STEP.zip` containing the generated STEP files flattened into a single directory. Both bundle names derive from `github.event.repository.name`, so renaming the repository renames the assets; the `zenith-ch750sd-step-files` artifact name in `step-files.yaml` is hardcoded, and after the October 2026 rename it happens to match the repository name in its hyphenated form.
 
 - DXF and SVG unfold drawings are still not in any bundle; they are hand-made and unreliably generated (see the June 2025 note in the README).
 - The STEP bundle is flattened with `zip -j`, so two parts sharing a basename would silently overwrite each other. The release workflow detects collisions and fails; if it fires, rename the manifest output for the new part rather than renaming a body.
