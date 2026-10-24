@@ -5,7 +5,7 @@ MANIFEST := scripts/parts.manifest
 STEP_DIR := step
 
 # The document list comes from the manifest, not from `wildcard *.FCStd`.
-# The repository also holds .FCStd files that are not bracket models (ELT_reference, ch750sd and sd750), and those must not become make targets.
+# The repository also holds .FCStd files that are not part models (ch750sd), and those must not become make targets.
 # The hash in the comment-matching pattern is escaped: make treats # as a comment in a variable assignment, but not inside a recipe.
 PART_NAMES := $(shell awk -F'|' \
 	'/^[[:space:]]*\#/ || /^[[:space:]]*$$/ { next } \

@@ -23,7 +23,7 @@ FreeCAD documents that define parts to fabricate (these are the ones in `scripts
 - `ACK_E04_ELT_Bracket.FCStd` — `ACK_E04_ELT_Bracket` (fab) plus `ACK_E04_ELT`, a reference model of the ELT itself
 - `FuelReturnHoseBracket.FCStd` and `WingtipWireBracket.FCStd` — single body each
 
-Other `.FCStd` files are **not** part models and have no parts to build: `ELT_reference.FCStd`, `ch750sd.FCStd`, `sd750.FCStd` (all contain zero `PartDesign::Body` objects; `ch750sd.FCStd` is populated by the scratch script `ch750sd.py`). Don't add them to the manifest, and don't treat an empty body list in them as a bug.
+Other `.FCStd` files are **not** part models and have no parts to build: `ch750sd.FCStd` (contains zero `PartDesign::Body` objects and is populated by the scratch script `ch750sd.py`). Don't add it to the manifest, and don't treat an empty body list in it as a bug.
 
 Other paths:
 
@@ -121,7 +121,7 @@ freecadcmd quirks that will bite you (all encoded in the script):
 
 ### Untracked files — do not auto-stage
 
-Tracked files are the seven fabricated-part `.FCStd` documents, `README.md`, `AGENTS.md`, `Makefile`, `scripts/`, `.github/`, and one `mcmaster/` supplier model. Untracked in the working tree: the three non-part documents (`ELT_reference.FCStd`, `ch750sd.FCStd`, `sd750.FCStd`) and the scratch `ch750sd.py`, plus the generated `step/` directory, a second `mcmaster/` model, and `export_stl.applescript`/`stl/`. Whether those belong in git is the maintainer's call, not an agent's. `.env`, `__pycache__/`, and `.DS_Store` are gitignored. Never run `git add -A` or `git add .` here; stage explicit paths and surface the ambiguity to the user instead of resolving it silently.
+Tracked files are the seven fabricated-part `.FCStd` documents, `README.md`, `AGENTS.md`, `Makefile`, `scripts/`, `.github/`, and one `mcmaster/` supplier model. Untracked in the working tree: the non-part document `ch750sd.FCStd` and its scratch script `ch750sd.py`, plus the generated `step/` directory, a second `mcmaster/` model, and `export_stl.applescript`/`stl/`. Whether those belong in git is the maintainer's call, not an agent's. `.env`, `__pycache__/`, and `.DS_Store` are gitignored. Never run `git add -A` or `git add .` here; stage explicit paths and surface the ambiguity to the user instead of resolving it silently.
 
 ## Workflows
 
